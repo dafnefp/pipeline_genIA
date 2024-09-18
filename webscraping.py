@@ -13,7 +13,7 @@ def obter_codigos():
 
     driver.get(url)
 
-    sleep(6)
+    sleep(5)
 
     site = BeautifulSoup(driver.page_source, 'html.parser')
 
@@ -24,6 +24,8 @@ def obter_codigos():
     for i in linhas[1:]:
         codigos = i.find("a")
         acoes.append(codigos.text)
+
+    sleep(2)
 
     driver.quit()
 
