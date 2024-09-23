@@ -6,30 +6,35 @@ from time import sleep
 
 
 def obter_codigos():
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
 
-    driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(options=options)
 
-    url = 'https://www.infomoney.com.br/ferramentas/altas-e-baixas/'
+        url = 'https://www.infomoney.com.br/ferramentas/altas-e-baixas/'
 
-    driver.get(url)
+        driver.get(url)
 
-    site = BeautifulSoup(driver.page_source, 'html.parser')
+        site = BeautifulSoup(driver.page_source, 'html.parser')
 
-    linhas = site.find_all('tr', {'role':'row'})
+        linhas = site.find_all('tr', {'role':'row'})
 
-    acoes = []
+        acoes = []
 
-    for i in linhas[1:]:
-        codigos = i.find("a")
-        acoes.append(codigos.text)
+        for i in linhas[1:]:
+            codigos = i.find("a")
+            acoes.append(codigos.text)
 
-    sleep(2)
+        sleep(2)
 
-    driver.quit()
+        driver.quit()
 
-    return acoes
+        return acoes
+
+    except Exception as e:
+        driver.quit()
+        raise e
 
 
 def buscar_dados(escolha, datamin, datamax):
@@ -42,53 +47,57 @@ def buscar_dados(escolha, datamin, datamax):
         datamin (date): data inicial do período das informações
         datamax (date): data final do período das informações
     """
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+        driver = webdriver.Chrome(options=options)
 
-    driver = webdriver.Chrome(options=options)
+        url_acao = f'https://www.infomoney.com.br/{escolha}'
+        driver.get(url_acao)
 
-    url_acao = f'https://www.infomoney.com.br/{escolha}'
-    driver.get(url_acao)
+        botao = driver.find_element(By.XPATH, "//a[span[text()='Histórico']]")
+        botao.click()
 
-    botao = driver.find_element(By.XPATH, "//a[span[text()='Histórico']]")
-    botao.click()
+        sleep(2)
 
-    sleep(2)
+        data_min = driver.find_element(By.ID, 'dateMin')
+        data_max = driver.find_element(By.ID, 'dateMax')
 
-    data_min = driver.find_element(By.ID, 'dateMin')
-    data_max = driver.find_element(By.ID, 'dateMax')
+        data_min.send_keys(datamin.strftime("%d/%m/%Y"))
+        data_max.send_keys(datamax.strftime("%d/%m/%Y"))
 
-    data_min.send_keys(datamin.strftime("%d/%m/%Y"))
-    data_max.send_keys(datamax.strftime("%d/%m/%Y"))
+        filtro = driver.find_element(By.ID, 'see_all_quotes_history')
+        filtro.click()
 
-    filtro = driver.find_element(By.ID, 'see_all_quotes_history')
-    filtro.click()
+        sleep(2)
 
-    sleep(2)
+        table = driver.find_element(By.ID, 'quotes_history')
 
-    table = driver.find_element(By.ID, 'quotes_history')
+        rows = table.find_elements(By.TAG_NAME, 'tr')
 
-    rows = table.find_elements(By.TAG_NAME, 'tr')
+        cabecalho = rows[0].find_elements(By.TAG_NAME, 'th')
 
-    cabecalho = rows[0].find_elements(By.TAG_NAME, 'th')
+        titulo = []
 
-    titulo = []
+        for texto in cabecalho:
+            titulo.append(texto.text)
 
-    for texto in cabecalho:
-        titulo.append(texto.text)
+        df = pd.DataFrame(columns=titulo)
 
-    df = pd.DataFrame(columns=titulo)
+        for row in rows[1:]:
+            # Find all the cells in the row
+            cells = row.find_elements(By.TAG_NAME, 'td')
 
-    for row in rows[1:]:
-        # Find all the cells in the row
-        cells = row.find_elements(By.TAG_NAME, 'td')
+            # Extract text from each cell
+            row_data = [cell.text for cell in cells]
 
-        # Extract text from each cell
-        row_data = [cell.text for cell in cells]
+            df.loc[len(df)] = row_data
 
-        df.loc[len(df)] = row_data
+        driver.quit()
 
-    driver.quit()
-
-    return df
+        return df
+    
+    except Exception as e:
+        driver.quit()
+        raise e
