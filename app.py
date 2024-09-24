@@ -1,5 +1,6 @@
 import streamlit as st
-from streamlit_funcoes import busca_acoes, escolher_acao, buscar_informacoes, perguntas
+from funcoes_webscraping import busca_acoes, buscar_informacoes
+from funcoes_dados import escolher_acao, validar_dados, perguntas
 
 def main():
     st.title('Informações Ações da Ibovespa')
@@ -8,13 +9,21 @@ def main():
     busca_acoes()
 
     # Passo 2: Usuário escolhe a ação e seleciona o período das informações
-    escolher_acao()
+    escolha, data_inicio, data_fim = escolher_acao()
 
-    # Passo 3: Inicializa o web scraping para buscar as informações dos dados selecionados pelo usuário
-    buscar_informacoes()
+    if st.button("Analisar"):
+        validar_dados(escolha, data_inicio, data_fim)
+        
+        # Passo 3: Inicializa o web scraping para buscar as informações dos dados selecionados pelo usuário
+        buscar_informacoes(escolha, data_inicio, data_fim)
 
     # Passo 4: Pergunta a IA sobre os dados
-    perguntas()
+    perguntas(escolha)
+
+    if 'ia_resposta' in st.session_state:
+        if st.button("Resetar aplicação"):
+                st.session_state.clear()
+                st.rerun()  # Recarrega a página para reiniciar
        
 
 if __name__ == "__main__":

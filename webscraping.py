@@ -86,10 +86,8 @@ def buscar_dados(escolha, datamin, datamax):
         df = pd.DataFrame(columns=titulo)
 
         for row in rows[1:]:
-            # Find all the cells in the row
             cells = row.find_elements(By.TAG_NAME, 'td')
 
-            # Extract text from each cell
             row_data = [cell.text for cell in cells]
 
             df.loc[len(df)] = row_data
