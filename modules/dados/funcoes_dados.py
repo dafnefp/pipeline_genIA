@@ -1,8 +1,12 @@
+import sys, os.path
+application_dir = (os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + '/modules/')
+sys.path.append(application_dir)
+
 import streamlit as st
 from datetime import date, timedelta
-from contrato import Dados
-from genIA import ask_groq
 from pydantic import ValidationError
+import dados.contrato as ct
+import inteligencia_artificial.genIA as ia
 
 
 def escolher_acao():
@@ -16,7 +20,7 @@ def escolher_acao():
 
 def validar_dados(escolha, data_inicio, data_fim):
     try: 
-        validacao = Dados(
+        validacao = ct.Dados(
             escolha = escolha, 
             data_inicio = data_inicio, 
             data_fim = data_fim
@@ -32,7 +36,7 @@ def perguntas(escolha):
         if st.button("Perguntar"):
             try:
                 with st.spinner("Consultando a IA, aguarde..."):
-                    answer = ask_groq(question, st.session_state.df)
+                    answer = ia.ask_groq(question, st.session_state.df)
                     st.session_state['ia_resposta'] = True
                     st.write(answer)
 

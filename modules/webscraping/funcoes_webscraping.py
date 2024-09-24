@@ -1,6 +1,10 @@
+import sys, os.path
+application_dir = (os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + '/modules/')
+sys.path.append(application_dir)
+
 import streamlit as st
 # from webscraping import obter_codigos, buscar_dados
-from teste import criar_dados
+import dados.teste as teste
 from time import sleep
 
 
@@ -26,7 +30,7 @@ def buscar_informacoes(escolha, data_inicio, data_fim):
                 st.info("Coletando informações baseadas nos dados fornecidos...")
                 # df = buscar_dados(st.session_state.escolha, st.session_state.data_inicio, st.session_state.data_fim)
                 sleep(5)
-                df = criar_dados()
+                df = teste.criar_dados()
                 st.session_state['webscraping_infos'] = True
             
             placeholder.empty()
